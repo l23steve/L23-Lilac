@@ -1,0 +1,17 @@
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+.env
+.venv/
+
+# IDE directories
+.idea/
+.vscode/
+# JetBrains IDEs
+*.iml
+# VS Code workspace files
+*.code-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
