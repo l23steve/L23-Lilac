@@ -16,7 +16,6 @@ dependencies = [
     "networkx==3.5",
     "requests==2.32.4",
 ]
-scripts = {"lilac" = "lilac.cli.main:main"}
 
 [project.scripts]
 lilac = "lilac.cli.main:main"
