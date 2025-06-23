@@ -16,17 +16,7 @@ def load_resources(directory: Path) -> list[Resource]:
     if not directory.is_dir():
         raise NotADirectoryError(directory)
 
-    resources: list[Resource] = []
-    for parsed in adapter_load_resources(directory):
-        resources.append(
-            Resource(
-                resource_type=parsed.resource_type,
-                namespace=parsed.namespace,
-                depends_on=parsed.depends_on,
-                properties=parsed.properties,
-            )
-        )
-    return resources
+    return adapter_load_resources(directory)
 
 
 def validate_directory(path: Path) -> list[Resource]:
