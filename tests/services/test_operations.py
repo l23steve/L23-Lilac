@@ -62,4 +62,4 @@ def test_validate_directory_recursive(tmp_path: Path) -> None:
     resources = validate_directory(tmp_path)
 
     assert len(resources) == 1
-    assert resources[0].type == "s3-bucket"
+    assert resources[0].resource_type == "s3-bucket"
