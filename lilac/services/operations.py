@@ -20,7 +20,7 @@ def load_resources(directory: Path) -> list[Resource]:
     for parsed in adapter_load_resources(directory):
         resources.append(
             Resource(
-                type=parsed.resource_type,
+                resource_type=parsed.resource_type,
                 namespace=parsed.namespace,
                 depends_on=parsed.depends_on,
                 properties=parsed.properties,
