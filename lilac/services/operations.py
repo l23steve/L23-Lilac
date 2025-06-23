@@ -1,21 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from lilac.domain.models import Resource
 
 from lilac.adapters import load_resources as adapter_load_resources
-
-
-@dataclass
-class Resource:
-    """Simple resource representation."""
-
-    type: str
-    namespace: str
-    depends_on: list[str]
-    properties: dict[str, Any]
-
 
 def placeholder_service() -> bool:
     """Service placeholder."""
