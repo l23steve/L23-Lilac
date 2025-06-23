@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from lilac.domain.models import Resource
 
-from lilac.adapters import load_yaml, validate_resource
+from lilac.adapters import load_resources as adapter_load_resources
 
 def placeholder_service() -> bool:
     """Service placeholder."""
@@ -17,15 +17,13 @@ def load_resources(directory: Path) -> list[Resource]:
         raise NotADirectoryError(directory)
 
     resources: list[Resource] = []
-    for path in directory.glob("*.yaml"):
-        data = load_yaml(path)
-        validate_resource(data)
+    for parsed in adapter_load_resources(directory):
         resources.append(
             Resource(
-                resource_type=data["type"],
-                namespace=data["namespace"],
-                depends_on=list(data["depends_on"]),
-                properties=dict(data["properties"]),
+                type=parsed.resource_type,
+                namespace=parsed.namespace,
+                depends_on=parsed.depends_on,
+                properties=parsed.properties,
             )
         )
     return resources
