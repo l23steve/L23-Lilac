@@ -4,7 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from lilac.adapters import load_yaml, validate_resource
+from lilac.adapters import load_resources as adapter_load_resources
 
 
 @dataclass
@@ -29,15 +29,13 @@ def load_resources(directory: Path) -> list[Resource]:
         raise NotADirectoryError(directory)
 
     resources: list[Resource] = []
-    for path in directory.glob("*.yaml"):
-        data = load_yaml(path)
-        validate_resource(data)
+    for parsed in adapter_load_resources(directory):
         resources.append(
             Resource(
-                type=data["type"],
-                namespace=data["namespace"],
-                depends_on=data["depends_on"],
-                properties=data["properties"],
+                type=parsed.resource_type,
+                namespace=parsed.namespace,
+                depends_on=parsed.depends_on,
+                properties=parsed.properties,
             )
         )
     return resources

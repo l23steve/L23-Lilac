@@ -44,3 +44,22 @@ def test_validate_directory_failure(tmp_path: Path) -> None:
 
     with pytest.raises(ValueError):
         validate_directory(tmp_path)
+
+
+def test_validate_directory_recursive(tmp_path: Path) -> None:
+    nested = tmp_path / "nested"
+    nested.mkdir()
+    resource_file = nested / "res.yaml"
+    resource_file.write_text(
+        """
+        type: s3-bucket
+        namespace: default
+        depends_on: []
+        properties: {}
+        """
+    )
+
+    resources = validate_directory(tmp_path)
+
+    assert len(resources) == 1
+    assert resources[0].type == "s3-bucket"
