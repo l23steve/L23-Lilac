@@ -32,3 +32,14 @@ def validate_resource(data: Mapping[str, Any]) -> None:
                 f"got {type(data[field]).__name__}"
             )
 
+
+def load_resources(directory: str | Path) -> list[Mapping[str, Any]]:
+    """Load and validate all YAML resources from a directory."""
+    dir_path = Path(directory)
+    resources: list[Mapping[str, Any]] = []
+    for file_path in dir_path.glob("*.yaml"):
+        data = load_yaml(file_path)
+        validate_resource(data)
+        resources.append(data)
+    return resources
+
