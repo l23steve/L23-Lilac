@@ -3,6 +3,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Mapping
 
+from lilac.domain.models import Resource
+
 import yaml
 
 
@@ -14,11 +16,16 @@ REQUIRED_FIELDS: dict[str, type] = {
 }
 
 
-def load_yaml(path: str | Path) -> Any:
-    """Load a YAML file and return the parsed data."""
+def load_yaml(path: str | Path) -> dict[str, Any]:
+    """Load a YAML file and return the raw mapping."""
     file_path = Path(path)
     with file_path.open("r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        data = yaml.safe_load(f)
+
+    if not isinstance(data, Mapping):
+        raise TypeError("YAML root must be a mapping")
+
+    return dict(data)
 
 
 def validate_resource(data: Mapping[str, Any]) -> None:
@@ -33,13 +40,23 @@ def validate_resource(data: Mapping[str, Any]) -> None:
             )
 
 
-def load_resources(directory: str | Path) -> list[Mapping[str, Any]]:
-    """Load and validate all YAML resources from a directory."""
-    dir_path = Path(directory)
-    resources: list[Mapping[str, Any]] = []
-    for file_path in dir_path.glob("*.yaml"):
-        data = load_yaml(file_path)
-        validate_resource(data)
-        resources.append(data)
+def load_resource(path: Path) -> Resource:
+    """Load a single YAML file into a :class:`Resource`."""
+    data = load_yaml(path)
+    validate_resource(data)
+    return Resource(
+        resource_type=data["type"],
+        namespace=data["namespace"],
+        depends_on=list(data["depends_on"]),
+        properties=dict(data["properties"]),
+        ignore=data.get("ignore", False),
+    )
+
+
+def load_resources(directory: Path) -> list[Resource]:
+    """Recursively load all ``.yaml`` files in ``directory`` as ``Resource`` objects."""
+    resources: list[Resource] = []
+    for file_path in Path(directory).rglob("*.yaml"):
+        resources.append(load_resource(file_path))
     return resources
 
