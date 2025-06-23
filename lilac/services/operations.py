@@ -1,21 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from lilac.domain.models import Resource
 
 from lilac.adapters import load_yaml, validate_resource
-
-
-@dataclass
-class Resource:
-    """Simple resource representation."""
-
-    type: str
-    namespace: str
-    depends_on: list[str]
-    properties: dict[str, Any]
-
 
 def placeholder_service() -> bool:
     """Service placeholder."""
@@ -34,10 +22,10 @@ def load_resources(directory: Path) -> list[Resource]:
         validate_resource(data)
         resources.append(
             Resource(
-                type=data["type"],
+                resource_type=data["type"],
                 namespace=data["namespace"],
-                depends_on=data["depends_on"],
-                properties=data["properties"],
+                depends_on=list(data["depends_on"]),
+                properties=dict(data["properties"]),
             )
         )
     return resources

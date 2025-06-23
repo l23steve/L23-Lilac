@@ -2,8 +2,8 @@ from pathlib import Path
 
 import pytest
 
+from lilac.domain.models import Resource
 from lilac.services.operations import (
-    Resource,
     placeholder_service,
     validate_directory,
 )
@@ -29,7 +29,7 @@ def test_validate_directory_success(tmp_path: Path) -> None:
 
     assert len(resources) == 1
     assert isinstance(resources[0], Resource)
-    assert resources[0].type == "s3-bucket"
+    assert resources[0].resource_type == "s3-bucket"
 
 
 def test_validate_directory_failure(tmp_path: Path) -> None:
