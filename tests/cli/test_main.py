@@ -1,5 +1,6 @@
 from click.testing import CliRunner
 from lilac.cli.main import main
+from lilac.domain.models import Resource
 import importlib
 
 
@@ -84,4 +85,45 @@ def test_validate_with_spec_failure(tmp_path, monkeypatch) -> None:
     result = runner.invoke(main, ["validate", str(tmp_path), "--region", "us-east-1"])
     assert result.exit_code != 0
     assert "Unknown property" in result.output
+
+
+def test_scan_success(tmp_path, monkeypatch) -> None:
+    res = Resource(
+        resource_type="s3-bucket",
+        namespace="prod",
+        depends_on=[],
+        properties={"name": "bucket"},
+    )
+    cli_main = importlib.import_module("lilac.cli.main")
+    monkeypatch.setattr(cli_main, "scan_resources", lambda ns: [res])
+
+    runner = CliRunner()
+    result = runner.invoke(
+        main,
+        ["scan", "--namespace", "prod", "--output-dir", str(tmp_path)],
+    )
+
+    assert result.exit_code == 0
+    assert (tmp_path / "s3-bucket_0.yaml").exists()
+
+
+def test_scan_failure(monkeypatch) -> None:
+    def bad_scan(ns: str) -> list[Resource]:
+        raise RuntimeError("boom")
+
+    cli_main = importlib.import_module("lilac.cli.main")
+    monkeypatch.setattr(cli_main, "scan_resources", bad_scan)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["scan", "--namespace", "prod"])
+
+    assert result.exit_code != 0
+    assert "boom" in result.output
+
+
+def test_scan_requires_namespace() -> None:
+    runner = CliRunner()
+    result = runner.invoke(main, ["scan"])
+    assert result.exit_code != 0
+    assert "--namespace" in result.output
 

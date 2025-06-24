@@ -60,3 +60,18 @@ def load_resources(directory: Path) -> list[Resource]:
         resources.append(load_resource(file_path))
     return resources
 
+
+def write_resource(resource: Resource, path: Path) -> None:
+    """Write a :class:`Resource` to ``path`` in YAML format."""
+    data = {
+        "type": resource.resource_type,
+        "namespace": resource.namespace,
+        "depends_on": list(resource.depends_on),
+        "properties": dict(resource.properties),
+    }
+    if resource.ignore:
+        data["ignore"] = resource.ignore
+
+    with Path(path).open("w", encoding="utf-8") as f:
+        yaml.safe_dump(data, f)
+

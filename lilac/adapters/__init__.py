@@ -6,6 +6,7 @@ from .yaml_io import (
     load_resources,
     load_yaml,
     validate_resource,
+    write_resource,
 )
 from .cfnspec import download_spec, load_spec
 
@@ -17,4 +18,5 @@ __all__ = [
     "load_resources",
     "download_spec",
     "load_spec",
+    "write_resource",
 ]
