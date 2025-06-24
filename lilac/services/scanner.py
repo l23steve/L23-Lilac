@@ -3,17 +3,13 @@ from __future__ import annotations
 from typing import List
 
 import boto3
-
 from lilac.adapters.aws import list_buckets
 from lilac.domain.models import Resource
 
-
-def scan_resources(namespace: str) -> List[Resource]:
-    """Return ``Resource`` models discovered via direct AWS API calls."""
-    s3 = boto3.client("s3")
-    result = s3.list_buckets()
+def scan_resources(namespace: str) -> list[Resource]:
+    """Scan AWS for resources matching ``namespace``."""
     resources: List[Resource] = []
-    for bucket in result.get("Buckets", []):
+    for bucket in list_buckets():
         resources.append(
             Resource(
                 resource_type="s3-bucket",
