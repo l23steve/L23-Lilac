@@ -1,12 +1,14 @@
 from __future__ import annotations
 
-from lilac.domain.models import Resource
+from typing import List
+
 from lilac.adapters.aws import list_buckets
+from lilac.domain.models import Resource
 
 
 def scan_resources(namespace: str) -> list[Resource]:
     """Scan AWS for resources matching ``namespace``."""
-    resources: list[Resource] = []
+    resources: List[Resource] = []
     for bucket in list_buckets():
         resources.append(
             Resource(
