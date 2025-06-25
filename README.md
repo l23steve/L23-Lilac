@@ -24,3 +24,9 @@ After installation the `lilac` CLI is available:
 ```bash
 lilac --help
 ```
+
+## Scanning resources
+
+Run `lilac scan` to discover infrastructure resources and write them as YAML
+files. The command calls the `scan_resources` function from
+`lilac.services.scanner` to perform the AWS lookup.
