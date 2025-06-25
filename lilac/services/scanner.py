@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import List
-
 import boto3
 from lilac.adapters.aws import list_buckets
 from lilac.domain.models import Resource

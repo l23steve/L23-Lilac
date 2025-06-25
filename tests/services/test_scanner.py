@@ -1,5 +1,4 @@
 import pytest
-
 from lilac.services.scanner import scan, scan_resources
 from lilac.domain.models import Resource
 import lilac.services.scanner as scanner
@@ -39,6 +38,14 @@ def test_scan_resources(monkeypatch):
     assert len(resources) == 1
     assert isinstance(resources[0], Resource)
     assert resources[0].properties["name"] == "one"
+
+    
+def test_scan_resources_empty(monkeypatch):
+    monkeypatch.setattr(scanner, "list_buckets", lambda: [])
+
+    resources = scan_resources("ns")
+
+    assert resources == []
     assert resources[0].namespace == "ns"
 
 
