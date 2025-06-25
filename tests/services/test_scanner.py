@@ -46,7 +46,6 @@ def test_scan_resources_empty(monkeypatch):
     resources = scan_resources("ns")
 
     assert resources == []
-    assert resources[0].namespace == "ns"
 
 
 def test_scan_resources_error(monkeypatch):

@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import List
 
-import boto3
 from lilac.adapters.aws import list_buckets
 from lilac.domain.models import Resource
 
@@ -16,8 +15,8 @@ def scan_resources(namespace: str) -> List[Resource]:
                 namespace=namespace,
                 depends_on=[],
                 properties={
-                    "name": bucket.get("Name"),
-                    "creation_date": bucket.get("CreationDate"),
+                    "name": bucket.get("name"),
+                    "creation_date": bucket.get("creation_date"),
                 },
             )
         )
