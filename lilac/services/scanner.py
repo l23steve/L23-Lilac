@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 from typing import List
-
+import boto3
 from lilac.adapters.aws import list_buckets
 from lilac.domain.models import Resource
 
-
-def scan_resources(namespace: str) -> List[Resource]:
+def scan_resources(namespace: str) -> list[Resource]:
     """Scan AWS for resources matching ``namespace``."""
     resources: List[Resource] = []
     for bucket in list_buckets():
@@ -16,15 +15,15 @@ def scan_resources(namespace: str) -> List[Resource]:
                 namespace=namespace,
                 depends_on=[],
                 properties={
-                    "name": bucket.get("name"),
-                    "creation_date": bucket.get("creation_date"),
+                    "name": bucket.get("Name"),
+                    "creation_date": bucket.get("CreationDate"),
                 },
             )
         )
     return resources
 
 def scan(namespace: str) -> list[Resource]:
-    """Discover AWS resources in the environment."""
+    """High level scanner that relies on adapter utilities for discovery."""
     resources: list[Resource] = []
     for bucket in list_buckets():
         resources.append(
