@@ -3,7 +3,7 @@ from pathlib import Path
 
 from lilac.adapters import load_resources, load_spec, write_resource
 from lilac.domain.validation import validate_against_spec
-from lilac.services import scan_resources
+from lilac.services import plan_changes, scan_resources
 
 @click.group()
 def main() -> None:
@@ -46,6 +46,20 @@ def scan(namespace: str, output_dir: str) -> None:
     except Exception as exc:  # pragma: no cover - tested via CliRunner
         raise click.ClickException(str(exc))
     click.echo(f"Wrote {len(resources)} resources to {out_dir}")
+
+
+@main.command()
+@click.argument("directory", default="resource_files")
+@click.option("--namespace", required=True, help="Namespace to plan.")
+def plan(directory: str, namespace: str) -> None:
+    """Show planned changes between DIRECTORY and AWS."""
+    try:
+        actions = plan_changes(directory, namespace)
+        for act in actions:
+            click.echo(f"{act.action.upper()}: {act.resource.resource_type}")
+    except Exception as exc:  # pragma: no cover - tested via CliRunner
+        raise click.ClickException(str(exc))
+    click.echo(f"Planned {len(actions)} actions")
 
 if __name__ == "__main__":
     main()
