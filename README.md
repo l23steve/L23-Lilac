@@ -30,3 +30,7 @@ lilac --help
 Run `lilac scan` to discover infrastructure resources and write them as YAML
 files. The command calls the `scan_resources` function from
 `lilac.services.scanner` to perform the AWS lookup.
+
+## Planning changes
+
+Run `lilac plan` to see what resources would be created, updated or deleted when comparing your YAML files to the live AWS environment. The command relies on `scan_resources` to discover the current state.

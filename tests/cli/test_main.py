@@ -1,6 +1,7 @@
 from click.testing import CliRunner
 from lilac.cli.main import main
 from lilac.domain.models import Resource
+from lilac.domain.plan import PlanAction
 import importlib
 
 
@@ -126,4 +127,35 @@ def test_scan_requires_namespace() -> None:
     result = runner.invoke(main, ["scan"])
     assert result.exit_code != 0
     assert "--namespace" in result.output
+
+
+def test_plan_success(tmp_path, monkeypatch) -> None:
+    res = Resource("s3-bucket", "prod", [], {"name": "bucket"})
+    cli_main = importlib.import_module("lilac.cli.main")
+    monkeypatch.setattr(
+        cli_main,
+        "plan_changes",
+        lambda d, ns: [PlanAction("create", res)],
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["plan", str(tmp_path), "--namespace", "prod"])
+
+    assert result.exit_code == 0
+    assert "CREATE" in result.output
+
+
+def test_plan_failure(monkeypatch) -> None:
+    cli_main = importlib.import_module("lilac.cli.main")
+
+    def bad_plan(d: str, ns: str):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(cli_main, "plan_changes", bad_plan)
+
+    runner = CliRunner()
+    result = runner.invoke(main, ["plan", "dir", "--namespace", "prod"])
+
+    assert result.exit_code != 0
+    assert "boom" in result.output
 
