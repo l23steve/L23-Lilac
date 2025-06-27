@@ -24,17 +24,4 @@ def scan_resources(namespace: str) -> List[Resource]:
 
 def scan(namespace: str) -> list[Resource]:
     """High level scanner that relies on adapter utilities for discovery."""
-    resources: list[Resource] = []
-    for bucket in list_buckets():
-        resources.append(
-            Resource(
-                resource_type="s3-bucket",
-                namespace=namespace,
-                depends_on=[],
-                properties={
-                    "name": bucket.get("name"),
-                    "creation_date": bucket.get("creation_date"),
-                },
-            )
-        )
-    return resources
+    return scan_resources(namespace)
