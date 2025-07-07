@@ -21,7 +21,14 @@ def test_scan(monkeypatch):
     monkeypatch.setattr(
         scanner,
         "list_buckets",
-        lambda: [{"name": "one", "creation_date": "today"}],
+        lambda: [
+            {
+                "name": "one",
+                "creation_date": "today",
+                "region": "r",
+                "details": {},
+            }
+        ],
     )
 
     resources = scan("default")
@@ -29,6 +36,7 @@ def test_scan(monkeypatch):
     assert len(resources) == 1
     assert isinstance(resources[0], Resource)
     assert resources[0].properties["name"] == "one"
+    assert "details" in resources[0].properties
 
 
 def test_scan_empty(monkeypatch):
@@ -45,7 +53,14 @@ def test_scan_resources(monkeypatch):
     monkeypatch.setattr(
         scanner,
         "list_buckets",
-        lambda: [{"name": "one", "creation_date": "today"}],
+        lambda: [
+            {
+                "name": "one",
+                "creation_date": "today",
+                "region": "r",
+                "details": {},
+            }
+        ],
     )
 
     resources = scan_resources("ns")
@@ -53,6 +68,7 @@ def test_scan_resources(monkeypatch):
     assert len(resources) == 1
     assert isinstance(resources[0], Resource)
     assert resources[0].properties["name"] == "one"
+    assert "details" in resources[0].properties
 
     
 def test_scan_resources_empty(monkeypatch):
@@ -79,9 +95,14 @@ def test_scan_additional_services(monkeypatch):
     _patch_all_empty(monkeypatch)
     monkeypatch.setattr(scanner, "list_buckets", lambda: [])
     monkeypatch.setattr(
-        scanner, "list_repositories", lambda: [{"name": "repo", "arn": "arn"}]
+        scanner,
+        "list_repositories",
+        lambda: [{"name": "repo", "arn": "arn", "uri": "u", "details": {}}],
     )
 
     resources = scan("ns")
 
     assert any(r.resource_type == "ecr-repo" for r in resources)
+    repo = next(r for r in resources if r.resource_type == "ecr-repo")
+    assert repo.properties["uri"] == "u"
+    assert "details" in repo.properties

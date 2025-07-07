@@ -7,6 +7,11 @@ def list_log_groups() -> list[dict[str, Any]]:
     client = boto3.client("logs")
     response = client.describe_log_groups()
     return [
-        {"name": group.get("logGroupName")}
+        {
+            "name": group.get("logGroupName"),
+            "arn": group.get("arn"),
+            "retention": group.get("retentionInDays"),
+            "details": group,
+        }
         for group in response.get("logGroups", [])
     ]

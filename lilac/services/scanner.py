@@ -29,6 +29,8 @@ def scan_resources(namespace: str) -> List[Resource]:
                 properties={
                     "name": bucket.get("name"),
                     "creation_date": bucket.get("creation_date"),
+                    "region": bucket.get("region"),
+                    "details": bucket.get("details"),
                 },
             )
         )
@@ -39,7 +41,12 @@ def scan_resources(namespace: str) -> List[Resource]:
                 resource_type="ecr-repo",
                 namespace=namespace,
                 depends_on=[],
-                properties={"name": repo.get("name"), "arn": repo.get("arn")},
+                properties={
+                    "name": repo.get("name"),
+                    "arn": repo.get("arn"),
+                    "uri": repo.get("uri"),
+                    "details": repo.get("details"),
+                },
             )
         )
 
@@ -52,6 +59,7 @@ def scan_resources(namespace: str) -> List[Resource]:
                 properties={
                     "arn": svc.get("serviceArn"),
                     "cluster": svc.get("clusterArn"),
+                    "details": svc.get("details"),
                 },
             )
         )
@@ -65,6 +73,7 @@ def scan_resources(namespace: str) -> List[Resource]:
                 properties={
                     "arn": task.get("taskArn"),
                     "cluster": task.get("clusterArn"),
+                    "details": task.get("details"),
                 },
             )
         )
@@ -75,7 +84,12 @@ def scan_resources(namespace: str) -> List[Resource]:
                 resource_type="ec2-instance",
                 namespace=namespace,
                 depends_on=[],
-                properties={"id": inst.get("id"), "type": inst.get("type")},
+                properties={
+                    "id": inst.get("id"),
+                    "type": inst.get("type"),
+                    "state": inst.get("state"),
+                    "details": inst.get("details"),
+                },
             )
         )
 
@@ -85,7 +99,12 @@ def scan_resources(namespace: str) -> List[Resource]:
                 resource_type="security-group",
                 namespace=namespace,
                 depends_on=[],
-                properties={"id": sg.get("id"), "name": sg.get("name")},
+                properties={
+                    "id": sg.get("id"),
+                    "name": sg.get("name"),
+                    "description": sg.get("description"),
+                    "details": sg.get("details"),
+                },
             )
         )
 
@@ -95,7 +114,11 @@ def scan_resources(namespace: str) -> List[Resource]:
                 resource_type="network-interface",
                 namespace=namespace,
                 depends_on=[],
-                properties={"id": ni.get("id")},
+                properties={
+                    "id": ni.get("id"),
+                    "subnet_id": ni.get("subnet_id"),
+                    "details": ni.get("details"),
+                },
             )
         )
 
@@ -105,7 +128,11 @@ def scan_resources(namespace: str) -> List[Resource]:
                 resource_type="vpc",
                 namespace=namespace,
                 depends_on=[],
-                properties={"id": vpc.get("id")},
+                properties={
+                    "id": vpc.get("id"),
+                    "cidr_block": vpc.get("cidr_block"),
+                    "details": vpc.get("details"),
+                },
             )
         )
 
@@ -115,7 +142,12 @@ def scan_resources(namespace: str) -> List[Resource]:
                 resource_type="route53-zone",
                 namespace=namespace,
                 depends_on=[],
-                properties={"id": zone.get("id"), "name": zone.get("name")},
+                properties={
+                    "id": zone.get("id"),
+                    "name": zone.get("name"),
+                    "record_set_count": zone.get("record_set_count"),
+                    "details": zone.get("details"),
+                },
             )
         )
 
@@ -125,7 +157,12 @@ def scan_resources(namespace: str) -> List[Resource]:
                 resource_type="cloudwatch-log-group",
                 namespace=namespace,
                 depends_on=[],
-                properties={"name": group.get("name")},
+                properties={
+                    "name": group.get("name"),
+                    "arn": group.get("arn"),
+                    "retention": group.get("retention"),
+                    "details": group.get("details"),
+                },
             )
         )
 
