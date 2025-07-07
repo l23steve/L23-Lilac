@@ -179,3 +179,48 @@ def test_plan_failure(monkeypatch) -> None:
     assert result.exit_code != 0
     assert "boom" in result.output
 
+
+def test_deploy_dry_run(monkeypatch) -> None:
+    res = Resource("s3-bucket", "prod", [], {"name": "bucket"})
+    cli_main = importlib.import_module("lilac.cli.main")
+    monkeypatch.setattr(
+        cli_main,
+        "plan_changes",
+        lambda d, ns: [PlanAction("update", res)],
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        main,
+        ["deploy", "--namespace", "prod", "--dry-run"],
+    )
+
+    assert result.exit_code == 0
+    assert "UPDATE" in result.output
+    assert "Dry run" in result.output
+
+
+def test_deploy_confirmation(monkeypatch) -> None:
+    res = Resource("s3-bucket", "prod", [], {"name": "bucket"})
+    cli_main = importlib.import_module("lilac.cli.main")
+    monkeypatch.setattr(
+        cli_main,
+        "plan_changes",
+        lambda d, ns: [PlanAction("update", res)],
+    )
+    monkeypatch.setattr(
+        cli_main,
+        "deploy_service",
+        lambda d, ns: [PlanAction("update", res)],
+    )
+
+    runner = CliRunner()
+    result = runner.invoke(
+        main,
+        ["deploy", "--namespace", "prod"],
+        input="y\n",
+    )
+
+    assert result.exit_code == 0
+    assert "Apply these changes?" in result.output
+
