@@ -1,9 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Sequence
-
-from typing import Any
+from typing import Any, Sequence
 
 from lilac.domain.models import Resource
 
@@ -23,19 +21,26 @@ def _strip_details(props: dict[str, Any]) -> dict[str, Any]:
     return new_props
 
 
+def _resource_key(res: Resource) -> tuple[str, str, Any]:
+    """Return a unique key for ``res`` used for diffing."""
+    props = _strip_details(res.properties)
+    ident = props.get("id") or props.get("arn") or props.get("name")
+    return (res.resource_type, res.namespace, ident)
+
+
 def diff_resources(
     desired: Sequence[Resource], actual: Sequence[Resource]
 ) -> list[PlanAction]:
     """Return a list of actions to reconcile ``actual`` with ``desired``."""
     actions: list[PlanAction] = []
-    actual_map: dict[tuple[str, str], Resource] = {
-        (r.resource_type, r.namespace): r for r in actual if not r.ignore
+    actual_map: dict[tuple[str, str, Any], Resource] = {
+        _resource_key(r): r for r in actual if not r.ignore
     }
 
     for res in desired:
         if res.ignore:
             continue
-        key = (res.resource_type, res.namespace)
+        key = _resource_key(res)
         live = actual_map.pop(key, None)
         if live is None:
             actions.append(PlanAction("create", res))
