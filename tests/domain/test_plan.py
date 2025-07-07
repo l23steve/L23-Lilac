@@ -38,3 +38,29 @@ def test_diff_ignores_details() -> None:
     actions = diff_resources(desired, actual)
 
     assert actions == []
+
+
+def test_diff_multiple_resources_same_type() -> None:
+    desired = [_res("a", {"name": "one"}), _res("a", {"name": "two"})]
+    actual = [_res("a", {"name": "one"}), _res("a", {"name": "two"})]
+
+    actions = diff_resources(desired, actual)
+
+    assert actions == []
+
+
+def test_diff_multiple_resources_update() -> None:
+    desired = [
+        _res("a", {"name": "one", "region": "us"}),
+        _res("a", {"name": "two", "region": "eu"}),
+    ]
+    actual = [
+        _res("a", {"name": "one", "region": "us"}),
+        _res("a", {"name": "two", "region": "us"}),
+    ]
+
+    actions = diff_resources(desired, actual)
+
+    assert len(actions) == 1
+    assert actions[0].action == "update"
+    assert actions[0].resource.properties["name"] == "two"
