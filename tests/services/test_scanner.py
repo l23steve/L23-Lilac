@@ -26,6 +26,7 @@ def test_scan(monkeypatch):
                 "name": "one",
                 "creation_date": "today",
                 "region": "r",
+                "tags": {"namespace": "default"},
                 "details": {},
             }
         ],
@@ -58,6 +59,7 @@ def test_scan_resources(monkeypatch):
                 "name": "one",
                 "creation_date": "today",
                 "region": "r",
+                "tags": {"namespace": "ns"},
                 "details": {},
             }
         ],
@@ -97,7 +99,15 @@ def test_scan_additional_services(monkeypatch):
     monkeypatch.setattr(
         scanner,
         "list_repositories",
-        lambda: [{"name": "repo", "arn": "arn", "uri": "u", "details": {}}],
+        lambda: [
+            {
+                "name": "repo",
+                "arn": "arn",
+                "uri": "u",
+                "tags": {"namespace": "ns"},
+                "details": {},
+            }
+        ],
     )
 
     resources = scan("ns")

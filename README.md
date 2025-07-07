@@ -1,10 +1,9 @@
 # Lilac
 
-Lilac (Live Infrastructure Lifecycle As Code) is a lightweight infrastructure-as-code helper. While many IaC tools
-focus on provisioning, Lilac concentrates on *introspection*. It can scan an AWS
-environment, describe resources in YAML and produce a plan of what would change
-if those files were applied. The project ships with a minimal code base,
-complete tests and continuous integration workflow.
+Lilac (Live Infrastructure Lifecycle As Code) is a lightweight helper for
+planning and deploying AWS resources. It describes the current infrastructure in
+YAML and compares it with your desired state. The code base is intentionally
+small and comes with a full test suite.
 
 ## Prerequisites
 
@@ -30,33 +29,32 @@ lilac --help
 
 ## Features
 
-- **Resource discovery** – `lilac scan` queries AWS APIs and serializes the
-  results as YAML files that are easy to inspect and version.
-- **Validation** – `lilac validate` can check resources against the
-  CloudFormation specification, ensuring property names and types are correct.
+- **Tagged discovery** – `lilac scan` only collects AWS resources that include a
+  `namespace` tag matching the provided value.
+- **Validation** – `lilac validate` can check resource files against the
+  CloudFormation specification.
 - **Change planning** – `lilac plan` compares your YAML definitions with the
-  live environment and reports resources to create, update or delete.
-- **Dependency ordering** – resources can declare dependencies and Lilac uses a
-  graph to process them in a safe order.
-- **Detail stripping** – transient `details` fields are ignored during diffs so
-  insignificant changes do not cause noise.
+  tagged resources found in AWS and reports creations, updates and deletions.
+- **Deployment** – basic create, update and delete operations for supported
+  resource types (currently S3 buckets).
 
 ## Scanning resources
 
-Run `lilac scan` to discover infrastructure resources and write them as YAML
-files. The command calls the `scan_resources` function from
-`lilac.services.scanner` to perform the AWS lookup.
+Run `lilac scan --namespace <env>` to discover infrastructure resources tagged
+with that namespace and write them as YAML files. The command uses
+`scan_resources` which filters AWS resources by the `namespace` tag.
 
 ## Planning changes
 
-Run `lilac plan` to see what resources would be created, updated or deleted when comparing your YAML files to the live AWS environment. The command relies on `scan_resources` to discover the current state.
+Run `lilac plan --namespace <env>` to see what resources would be created,
+updated or deleted compared to the tagged resources in AWS. Only resources with
+the matching tag are considered.
 
 ## Deploying changes
 
-Use `lilac deploy` to apply a plan. The command lists all create and update
-operations, highlights any resources that will be recreated, and requests
-confirmation before execution. Add `--dry-run` to preview the actions without
-making changes.
+Use `lilac deploy --namespace <env>` to apply a plan for resources tagged with
+that namespace. The command lists all create and update operations, highlights
+recreations, asks for confirmation and supports `--dry-run` to preview changes.
 
 ## What sets Lilac apart
 
