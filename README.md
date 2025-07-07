@@ -1,6 +1,6 @@
 # Lilac
 
-Lilac is a lightweight infrastructure-as-code helper. While many IaC tools
+Lilac (Live Infrastructure Lifecycle As Code) is a lightweight infrastructure-as-code helper. While many IaC tools
 focus on provisioning, Lilac concentrates on *introspection*. It can scan an AWS
 environment, describe resources in YAML and produce a plan of what would change
 if those files were applied. The project ships with a minimal code base,
