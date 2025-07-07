@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Sequence
 
+from typing import Any
+
 from lilac.domain.models import Resource
 
 
@@ -12,6 +14,13 @@ class PlanAction:
 
     action: str
     resource: Resource
+
+
+def _strip_details(props: dict[str, Any]) -> dict[str, Any]:
+    """Return ``props`` without the ``details`` key."""
+    new_props = dict(props)
+    new_props.pop("details", None)
+    return new_props
 
 
 def diff_resources(
@@ -30,7 +39,7 @@ def diff_resources(
         live = actual_map.pop(key, None)
         if live is None:
             actions.append(PlanAction("create", res))
-        elif live.properties != res.properties:
+        elif _strip_details(live.properties) != _strip_details(res.properties):
             actions.append(PlanAction("update", res))
 
     for remaining in actual_map.values():
