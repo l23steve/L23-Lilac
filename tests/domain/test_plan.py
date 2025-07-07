@@ -29,3 +29,12 @@ def test_diff_ignore_flag() -> None:
     actions = diff_resources(desired, actual)
 
     assert actions == []
+
+
+def test_diff_ignores_details() -> None:
+    desired = [_res("a", {"x": 1, "details": {"something": 1}})]
+    actual = [_res("a", {"x": 1, "details": {"something": 2}})]
+
+    actions = diff_resources(desired, actual)
+
+    assert actions == []
