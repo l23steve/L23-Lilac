@@ -3,9 +3,10 @@ import pytest
 
 
 class FakeClient:
-    def __init__(self, buckets=None, locations=None, fail=False):
+    def __init__(self, buckets=None, locations=None, tags=None, fail=False):
         self.buckets = buckets or []
         self.locations = locations or {}
+        self.tags = tags or {}
         self.fail = fail
 
     def list_buckets(self):
@@ -18,11 +19,20 @@ class FakeClient:
             raise Exception("failed")
         return {"LocationConstraint": self.locations.get(Bucket)}
 
+    def get_bucket_tagging(self, Bucket):
+        if self.fail:
+            raise Exception("failed")
+        tag_set = [
+            {"Key": k, "Value": v} for k, v in self.tags.get(Bucket, {}).items()
+        ]
+        return {"TagSet": tag_set}
+
 
 def test_list_buckets(monkeypatch):
     fake = FakeClient(
         buckets=[{"Name": "one", "CreationDate": "today"}],
         locations={"one": "us-west-2"},
+        tags={"one": {"env": "prod"}},
     )
     monkeypatch.setattr(s3.boto3, "client", lambda service: fake)
 
@@ -30,6 +40,7 @@ def test_list_buckets(monkeypatch):
 
     assert buckets[0]["name"] == "one"
     assert buckets[0]["region"] == "us-west-2"
+    assert buckets[0]["tags"] == {"env": "prod"}
     assert "details" in buckets[0]
 
 

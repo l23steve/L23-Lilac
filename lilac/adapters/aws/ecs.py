@@ -14,10 +14,19 @@ def list_services() -> list[dict[str, Any]]:
             continue
         details = client.describe_services(cluster=cluster, services=arns)
         for svc in details.get("services", []):
+            try:
+                tag_resp = client.list_tags_for_resource(
+                    resourceArn=svc.get("serviceArn")
+                )
+                tag_set = tag_resp.get("tags", [])
+                tags = {t["Key"]: t["Value"] for t in tag_set}
+            except Exception:  # pragma: no cover - network issues
+                tags = {}
             services.append(
                 {
                     "serviceArn": svc.get("serviceArn"),
                     "clusterArn": cluster,
+                    "tags": tags,
                     "details": svc,
                 }
             )
@@ -36,10 +45,19 @@ def list_tasks() -> list[dict[str, Any]]:
             continue
         details = client.describe_tasks(cluster=cluster, tasks=arns)
         for task in details.get("tasks", []):
+            try:
+                tag_resp = client.list_tags_for_resource(
+                    resourceArn=task.get("taskArn")
+                )
+                tag_set = tag_resp.get("tags", [])
+                tags = {t["Key"]: t["Value"] for t in tag_set}
+            except Exception:  # pragma: no cover - network issues
+                tags = {}
             tasks.append(
                 {
                     "taskArn": task.get("taskArn"),
                     "clusterArn": cluster,
+                    "tags": tags,
                     "details": task,
                 }
             )

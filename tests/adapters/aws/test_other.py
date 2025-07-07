@@ -9,23 +9,34 @@ class FakePaginator:
         return self.pages
 
 class FakeEcrClient:
-    def __init__(self, repos=None, fail=False):
+    def __init__(self, repos=None, tags=None, fail=False):
         self.repos = repos or []
+        self.tags = tags or {}
         self.fail = fail
     def get_paginator(self, name):
         if self.fail:
             raise Exception("fail")
         return FakePaginator([{"repositories": self.repos}])
 
+    def list_tags_for_resource(self, resourceArn):
+        if self.fail:
+            raise Exception("fail")
+        tag_set = [
+            {"Key": k, "Value": v} for k, v in self.tags.get(resourceArn, {}).items()
+        ]
+        return {"tags": tag_set}
+
 
 def test_list_repositories(monkeypatch):
     fake = FakeEcrClient(
-        repos=[{"repositoryName": "r", "repositoryArn": "a", "repositoryUri": "u"}]
+        repos=[{"repositoryName": "r", "repositoryArn": "a", "repositoryUri": "u"}],
+        tags={"a": {"env": "prod"}},
     )
     monkeypatch.setattr(ecr.boto3, "client", lambda service: fake)
     repos = ecr.list_repositories()
     assert repos[0]["name"] == "r"
     assert repos[0]["uri"] == "u"
+    assert repos[0]["tags"] == {"env": "prod"}
     assert "details" in repos[0]
 
 
@@ -42,12 +53,16 @@ class FakeEcsClient:
         tasks=None,
         service_details=None,
         task_details=None,
+        service_tags=None,
+        task_tags=None,
         fail=False,
     ):
         self.services = services or []
         self.tasks = tasks or []
         self.service_details = service_details or []
         self.task_details = task_details or []
+        self.service_tags = service_tags or {}
+        self.task_tags = task_tags or {}
         self.fail = fail
     def list_clusters(self):
         if self.fail:
@@ -73,27 +88,42 @@ class FakeEcsClient:
             raise Exception("fail")
         return {"tasks": self.task_details}
 
+    def list_tags_for_resource(self, resourceArn):
+        if self.fail:
+            raise Exception("fail")
+        tags = (
+            self.service_tags.get(resourceArn)
+            or self.task_tags.get(resourceArn)
+            or {}
+        )
+        tag_set = [{"Key": k, "Value": v} for k, v in tags.items()]
+        return {"tags": tag_set}
+
 
 def test_list_services(monkeypatch):
     fake = FakeEcsClient(
         services=["s"],
         service_details=[{"serviceArn": "s", "desiredCount": 1}],
+        service_tags={"s": {"env": "prod"}},
     )
     monkeypatch.setattr(ecs.boto3, "client", lambda service: fake)
     services = ecs.list_services()
     assert services[0]["serviceArn"] == "s"
     assert services[0]["details"]["desiredCount"] == 1
+    assert services[0]["tags"] == {"env": "prod"}
 
 
 def test_list_tasks(monkeypatch):
     fake = FakeEcsClient(
         tasks=["t"],
         task_details=[{"taskArn": "t", "lastStatus": "RUNNING"}],
+        task_tags={"t": {"env": "prod"}},
     )
     monkeypatch.setattr(ecs.boto3, "client", lambda service: fake)
     tasks = ecs.list_tasks()
     assert tasks[0]["taskArn"] == "t"
     assert tasks[0]["details"]["lastStatus"] == "RUNNING"
+    assert tasks[0]["tags"] == {"env": "prod"}
 
 
 def test_list_services_error(monkeypatch):
@@ -123,6 +153,7 @@ class FakeEc2Client:
                             "InstanceId": "i",
                             "InstanceType": "t",
                             "State": {"Name": "running"},
+                            "Tags": [{"Key": "env", "Value": "prod"}],
                         }
                     ]
                 }
@@ -137,6 +168,7 @@ class FakeEc2Client:
                     "GroupId": "gid",
                     "GroupName": "name",
                     "Description": "desc",
+                    "Tags": [{"Key": "env", "Value": "prod"}],
                 }
             ]
         }
@@ -145,13 +177,25 @@ class FakeEc2Client:
             raise Exception("fail")
         return {
             "NetworkInterfaces": [
-                {"NetworkInterfaceId": "nid", "SubnetId": "subnet"}
+                {
+                    "NetworkInterfaceId": "nid",
+                    "SubnetId": "subnet",
+                    "TagSet": [{"Key": "env", "Value": "prod"}],
+                }
             ]
         }
     def describe_vpcs(self):
         if self.fail:
             raise Exception("fail")
-        return {"Vpcs": [{"VpcId": "vpc", "CidrBlock": "10.0.0.0/16"}]}
+        return {
+            "Vpcs": [
+                {
+                    "VpcId": "vpc",
+                    "CidrBlock": "10.0.0.0/16",
+                    "Tags": [{"Key": "env", "Value": "prod"}],
+                }
+            ]
+        }
 
 
 def test_list_instances(monkeypatch):
@@ -160,6 +204,7 @@ def test_list_instances(monkeypatch):
     instances = ec2.list_instances()
     assert instances[0]["id"] == "i"
     assert instances[0]["state"] == "running"
+    assert instances[0]["tags"] == {"env": "prod"}
     assert "details" in instances[0]
 
 
@@ -176,6 +221,7 @@ def test_list_security_groups(monkeypatch):
     groups = ec2.list_security_groups()
     assert groups[0]["name"] == "name"
     assert groups[0]["description"] == "desc"
+    assert groups[0]["tags"] == {"env": "prod"}
     assert "details" in groups[0]
 
 
@@ -185,6 +231,7 @@ def test_list_network_interfaces(monkeypatch):
     nis = ec2.list_network_interfaces()
     assert nis[0]["id"] == "nid"
     assert nis[0]["subnet_id"] == "subnet"
+    assert nis[0]["tags"] == {"env": "prod"}
     assert "details" in nis[0]
 
 
@@ -194,6 +241,7 @@ def test_list_vpcs(monkeypatch):
     vpcs = ec2.list_vpcs()
     assert vpcs[0]["id"] == "vpc"
     assert vpcs[0]["cidr_block"] == "10.0.0.0/16"
+    assert vpcs[0]["tags"] == {"env": "prod"}
     assert "details" in vpcs[0]
 
 
@@ -233,6 +281,11 @@ class FakeRoute53Client:
             ]
         }
 
+    def list_tags_for_resource(self, ResourceType, ResourceId):
+        if self.fail:
+            raise Exception("fail")
+        return {"ResourceTagSet": {"Tags": [{"Key": "env", "Value": "prod"}]}}
+
 
 def test_list_zones(monkeypatch):
     fake = FakeRoute53Client()
@@ -240,6 +293,7 @@ def test_list_zones(monkeypatch):
     zones = route53.list_zones()
     assert zones[0]["id"] == "Z1"
     assert zones[0]["record_set_count"] == 3
+    assert zones[0]["tags"] == {"env": "prod"}
     assert "details" in zones[0]
 
 
@@ -261,6 +315,11 @@ class FakeLogsClient:
             ]
         }
 
+    def list_tags_log_group(self, logGroupName):
+        if self.fail:
+            raise Exception("fail")
+        return {"tags": {"env": "prod"}}
+
 
 def test_list_log_groups(monkeypatch):
     fake = FakeLogsClient()
@@ -269,6 +328,7 @@ def test_list_log_groups(monkeypatch):
     assert groups[0]["name"] == "g"
     assert groups[0]["arn"] == "arn"
     assert groups[0]["retention"] == 7
+    assert groups[0]["tags"] == {"env": "prod"}
     assert "details" in groups[0]
 
 

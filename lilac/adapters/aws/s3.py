@@ -15,11 +15,18 @@ def list_buckets() -> list[dict[str, Any]]:
             location = loc_resp.get("LocationConstraint") or "us-east-1"
         except Exception:  # pragma: no cover - network issues
             location = None
+        try:
+            tag_resp = client.get_bucket_tagging(Bucket=name)
+            tag_set = tag_resp.get("TagSet", [])
+            tags = {t["Key"]: t["Value"] for t in tag_set}
+        except Exception:  # pragma: no cover - network issues
+            tags = {}
         info = {
             "name": name,
             "creation_date": b.get("CreationDate"),
             "region": location,
+            "tags": tags,
         }
-        info["details"] = {**b, "region": location}
+        info["details"] = {**b, "region": location, "tags": tags}
         results.append(info)
     return results
