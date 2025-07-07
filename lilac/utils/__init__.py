@@ -1,5 +1,5 @@
 """Utility helpers for Lilac."""
 
-from .helpers import helper
+from .helpers import helper, sanitize_filename
 
-__all__ = ["helper"]
+__all__ = ["helper", "sanitize_filename"]

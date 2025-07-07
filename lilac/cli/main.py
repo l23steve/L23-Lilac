@@ -4,6 +4,7 @@ from pathlib import Path
 from lilac.adapters import load_resources, load_spec, write_resource
 from lilac.domain.validation import validate_against_spec
 from lilac.services import plan_changes, scan_resources
+from lilac.utils.helpers import sanitize_filename
 
 @click.group()
 def main() -> None:
@@ -41,7 +42,13 @@ def scan(namespace: str, output_dir: str) -> None:
         out_dir = Path(output_dir)
         out_dir.mkdir(parents=True, exist_ok=True)
         for idx, res in enumerate(resources):
-            file_path = out_dir / f"{res.resource_type}_{idx}.yaml"
+            dir_path = out_dir / res.resource_type
+            dir_path.mkdir(parents=True, exist_ok=True)
+            base_name = str(
+                res.properties.get("name") or res.properties.get("id") or idx
+            )
+            safe_name = sanitize_filename(base_name)
+            file_path = dir_path / f"{safe_name}.yaml"
             write_resource(res, file_path)
     except Exception as exc:  # pragma: no cover - tested via CliRunner
         raise click.ClickException(str(exc))

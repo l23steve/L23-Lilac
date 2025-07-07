@@ -105,7 +105,27 @@ def test_scan_success(tmp_path, monkeypatch) -> None:
     )
 
     assert result.exit_code == 0
-    assert (tmp_path / "s3-bucket_0.yaml").exists()
+    assert (tmp_path / "s3-bucket" / "bucket.yaml").exists()
+
+
+def test_scan_sanitizes_name(tmp_path, monkeypatch) -> None:
+    res = Resource(
+        resource_type="s3-bucket",
+        namespace="prod",
+        depends_on=[],
+        properties={"name": "my bucket/v1"},
+    )
+    cli_main = importlib.import_module("lilac.cli.main")
+    monkeypatch.setattr(cli_main, "scan_resources", lambda ns: [res])
+
+    runner = CliRunner()
+    result = runner.invoke(
+        main,
+        ["scan", "--namespace", "prod", "--output-dir", str(tmp_path)],
+    )
+
+    assert result.exit_code == 0
+    assert (tmp_path / "s3-bucket" / "my_bucket_v1.yaml").exists()
 
 
 def test_scan_failure(monkeypatch) -> None:
