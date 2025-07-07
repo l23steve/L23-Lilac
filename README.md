@@ -51,6 +51,13 @@ files. The command calls the `scan_resources` function from
 
 Run `lilac plan` to see what resources would be created, updated or deleted when comparing your YAML files to the live AWS environment. The command relies on `scan_resources` to discover the current state.
 
+## Deploying changes
+
+Use `lilac deploy` to apply a plan. The command lists all create and update
+operations, highlights any resources that will be recreated, and requests
+confirmation before execution. Add `--dry-run` to preview the actions without
+making changes.
+
 ## What sets Lilac apart
 
 Unlike many IaC solutions, Lilac does not apply changes directly. It focuses on
