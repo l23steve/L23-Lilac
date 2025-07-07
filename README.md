@@ -60,8 +60,8 @@ making changes.
 
 ## What sets Lilac apart
 
-Unlike many IaC solutions, Lilac does not apply changes directly. It focuses on
-gathering information and producing actionable plans so you can manage updates
-manually or integrate them into your existing tooling. The YAML format mirrors
-AWS data closely and the small code base makes it easy to extend or embed in
-other systems.
+Unlike many IaC solutions, Lilac originally focused purely on planning.
+It now includes lightweight deployment capabilities for select resource types
+via boto3 while still gathering detailed plans beforehand. The YAML format
+mirrors AWS data closely and the small code base makes it easy to extend or
+embed in other systems.
